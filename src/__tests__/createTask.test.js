@@ -1,18 +1,16 @@
-// __tests__/createTask.test.js
+// src/__tests__/createTask.test.js
 
-// 1) Mock uuid before importing your handler
+// 1) Mock uuid
 jest.mock('uuid', () => ({ v4: () => 'fixed-uuid' }));
 
-// 2) Mock your Dynamo helper so put().promise() resolves immediately
-jest.mock('../src/lib/dynamo', () => ({
+// 2) Mock our local Dynamo helper (path is ../lib/dynamo, not ../src/lib/dynamo)
+jest.mock('../lib/dynamo', () => ({
   getClient: () => ({
-    put: () => ({
-      promise: () => Promise.resolve({})
-    })
+    put: () => ({ promise: () => Promise.resolve({}) })
   })
 }));
 
-// 3) Now import the handler under test
+// 3) Import the handler under test (path is ../handlers/createTask)
 const { createTask } = require('../handlers/createTask');
 
 describe('createTask handler', () => {
@@ -27,7 +25,6 @@ describe('createTask handler', () => {
     };
 
     const res = await createTask(event);
-
     expect(res.statusCode).toBe(201);
     expect(JSON.parse(res.body)).toEqual({
       userId: 'user-1',
