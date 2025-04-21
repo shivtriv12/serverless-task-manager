@@ -1,9 +1,11 @@
-// in src/handlers/getTasks.js
+const { getClient } = require('../lib/dynamo');
+const table = process.env.TASKS_TABLE;
+
 exports.getTasks = async (event) => {
-  // fall back from authorizer to query string
-  const userId = event.requestContext.authorizer?.claims?.sub
-               || event.queryStringParameters?.userId
-               || 'anonymous';
+  // Determine userId from Cognito authorizer or query parameter
+  const userId = event.requestContext?.authorizer?.claims?.sub
+                || event.queryStringParameters?.userId
+                || 'anonymous';
 
   const result = await getClient().query({
     TableName: table,
