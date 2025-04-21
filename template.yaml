@@ -32,6 +32,9 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/createTask.createTask
+      Policies: # ← add this block
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TasksTable
       Events:
         PostTask:
           Type: Api
@@ -43,6 +46,9 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/getTasks.getTasks
+      Policies: # ← add this block
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TasksTable
       Events:
         ListTasks:
           Type: Api
@@ -54,6 +60,9 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/getTaskById.getTaskById
+      Policies: # ← add this block
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TasksTable
       Events:
         GetTask:
           Type: Api
@@ -65,6 +74,9 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/updateTask.updateTask
+      Policies: # ← add this block
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TasksTable
       Events:
         PutTask:
           Type: Api
@@ -76,6 +88,9 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/deleteTask.deleteTask
+      Policies: # ← add this block
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TasksTable
       Events:
         DeleteTask:
           Type: Api

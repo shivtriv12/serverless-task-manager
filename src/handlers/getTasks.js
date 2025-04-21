@@ -1,8 +1,9 @@
-const { getClient } = require('../lib/dynamo');
-const table = process.env.TASKS_TABLE;
-
+// in src/handlers/getTasks.js
 exports.getTasks = async (event) => {
-  const userId = event.requestContext.authorizer?.claims?.sub || 'anonymous';
+  // fall back from authorizer to query string
+  const userId = event.requestContext.authorizer?.claims?.sub
+               || event.queryStringParameters?.userId
+               || 'anonymous';
 
   const result = await getClient().query({
     TableName: table,
