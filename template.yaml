@@ -82,3 +82,12 @@ Resources:
           Properties:
             Path: /tasks/{id}
             Method: delete
+
+Outputs:
+  ApiUrl:
+    Description: "API Gateway endpoint URL for Prod stage"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
+
+  TasksTableName:
+    Description: "DynamoDB table name for tasks"
+    Value: !Ref TasksTable

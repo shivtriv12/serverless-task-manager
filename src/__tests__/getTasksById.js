@@ -37,6 +37,7 @@ jest.mock('../lib/dynamo', () => ({
       description: 'Desc2',
       dueDate: '2025-04-23',
       status: 'done'
+      
     });
   });
   
