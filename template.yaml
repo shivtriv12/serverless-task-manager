@@ -28,81 +28,6 @@ Resources:
           KeyType: RANGE
       BillingMode: PAY_PER_REQUEST
 
-  CreateTaskFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: src/handlers/createTask.createTask
-      Policies: # ← add this block
-        - DynamoDBCrudPolicy:
-            TableName: !Ref TasksTable
-      Events:
-        PostTask:
-          Type: Api
-          Properties:
-            RestApiId: !Ref TaskApi # ← reference your explicit Api
-            Path: /tasks
-            Method: post
-
-  GetTasksFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: src/handlers/getTasks.getTasks
-      Policies: # ← add this block
-        - DynamoDBCrudPolicy:
-            TableName: !Ref TasksTable
-      Events:
-        ListTasks:
-          Type: Api
-          Properties:
-            RestApiId: !Ref TaskApi # ← reference your explicit Api
-            Path: /tasks
-            Method: get
-
-  GetTaskByIdFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: src/handlers/getTaskById.getTaskById
-      Policies: # ← add this block
-        - DynamoDBCrudPolicy:
-            TableName: !Ref TasksTable
-      Events:
-        GetTask:
-          Type: Api
-          Properties:
-            RestApiId: !Ref TaskApi # ← reference your explicit Api
-            Path: /tasks/{id}
-            Method: get
-
-  UpdateTaskFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: src/handlers/updateTask.updateTask
-      Policies: # ← add this block
-        - DynamoDBCrudPolicy:
-            TableName: !Ref TasksTable
-      Events:
-        PutTask:
-          Type: Api
-          Properties:
-            RestApiId: !Ref TaskApi # ← reference your explicit Api
-            Path: /tasks/{id}
-            Method: put
-
-  DeleteTaskFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: src/handlers/deleteTask.deleteTask
-      Policies: # ← add this block
-        - DynamoDBCrudPolicy:
-            TableName: !Ref TasksTable
-      Events:
-        DeleteTask:
-          Type: Api
-          Properties:
-            RestApiId: !Ref TaskApi # ← reference your explicit Api
-            Path: /tasks/{id}
-            Method: delete
-    # 1) User Pool to manage your users
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
@@ -110,7 +35,6 @@ Resources:
       AutoVerifiedAttributes:
         - email
 
-  # 2) App Client to allow your code to authenticate
   CognitoUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
@@ -124,7 +48,9 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       Name: TaskManagerApi
-      StageName: Prod # must match the stage you’re hitting
+      StageName: Prod
+      EndpointConfiguration:
+        Type: REGIONAL
       Auth:
         DefaultAuthorizer: CognitoAuthorizer
         Authorizers:
@@ -133,10 +59,85 @@ Resources:
             Identity:
               ReauthorizeEvery: 0
 
+  CreateTaskFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/createTask.createTask
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TasksTable
+      Events:
+        PostTask:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaskApi
+            Path: /tasks
+            Method: post
+
+  GetTasksFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/getTasks.getTasks
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TasksTable
+      Events:
+        ListTasks:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaskApi
+            Path: /tasks
+            Method: get
+
+  GetTaskByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/getTaskById.getTaskById
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TasksTable
+      Events:
+        GetTask:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaskApi
+            Path: /tasks/{id}
+            Method: get
+
+  UpdateTaskFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/updateTask.updateTask
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TasksTable
+      Events:
+        PutTask:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaskApi
+            Path: /tasks/{id}
+            Method: put
+
+  DeleteTaskFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/deleteTask.deleteTask
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TasksTable
+      Events:
+        DeleteTask:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TaskApi
+            Path: /tasks/{id}
+            Method: delete
+
 Outputs:
   ApiUrl:
     Description: "API Gateway endpoint URL for Prod stage"
-    Value: !Sub "https://${TaskApi}.execute-api.${AWS::Region}.amazonaws.com/Prod" # Use TaskApi logical ID
+    Value: !Sub "https://${TaskApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
 
   TasksTableName:
     Description: "DynamoDB table name for tasks"
