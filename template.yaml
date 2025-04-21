@@ -39,6 +39,7 @@ Resources:
         PostTask:
           Type: Api
           Properties:
+            RestApiId: !Ref TaskApi # ← reference your explicit Api
             Path: /tasks
             Method: post
 
@@ -53,6 +54,7 @@ Resources:
         ListTasks:
           Type: Api
           Properties:
+            RestApiId: !Ref TaskApi # ← reference your explicit Api
             Path: /tasks
             Method: get
 
@@ -67,6 +69,7 @@ Resources:
         GetTask:
           Type: Api
           Properties:
+            RestApiId: !Ref TaskApi # ← reference your explicit Api
             Path: /tasks/{id}
             Method: get
 
@@ -81,6 +84,7 @@ Resources:
         PutTask:
           Type: Api
           Properties:
+            RestApiId: !Ref TaskApi # ← reference your explicit Api
             Path: /tasks/{id}
             Method: put
 
@@ -95,14 +99,53 @@ Resources:
         DeleteTask:
           Type: Api
           Properties:
+            RestApiId: !Ref TaskApi # ← reference your explicit Api
             Path: /tasks/{id}
             Method: delete
+    # 1) User Pool to manage your users
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: TaskManagerUserPool
+      AutoVerifiedAttributes:
+        - email
+
+  # 2) App Client to allow your code to authenticate
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: TaskManagerClient
+      UserPoolId: !Ref CognitoUserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+
+  TaskApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: TaskManagerApi
+      StageName: Prod # must match the stage you’re hitting
+      Auth:
+        DefaultAuthorizer: CognitoAuthorizer
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !GetAtt CognitoUserPool.Arn
+            Identity:
+              ReauthorizeEvery: 0
 
 Outputs:
   ApiUrl:
     Description: "API Gateway endpoint URL for Prod stage"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
+    Value: !Sub "https://${TaskApi}.execute-api.${AWS::Region}.amazonaws.com/Prod" # Use TaskApi logical ID
 
   TasksTableName:
     Description: "DynamoDB table name for tasks"
     Value: !Ref TasksTable
+
+  CognitoUserPoolId:
+    Description: "Cognito User Pool ID"
+    Value: !Ref CognitoUserPool
+
+  CognitoUserPoolClientId:
+    Description: "Cognito User Pool Client ID"
+    Value: !Ref CognitoUserPoolClient
