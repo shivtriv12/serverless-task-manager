@@ -1,0 +1,4 @@
+// src/lib/dynamo.js
+const AWS = require('aws-sdk');
+const dynamo = new AWS.DynamoDB.DocumentClient();
+module.exports = { getClient: () => dynamo };
