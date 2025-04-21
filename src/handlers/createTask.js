@@ -1,13 +1,16 @@
-// src/handlers/createTask.js
 const { v4: uuid } = require('uuid');
 const { getClient } = require('../lib/dynamo');
 const table = process.env.TASKS_TABLE;
 
 exports.createTask = async (event) => {
-  // Use Cognito identity for userId
-  const userId = event.requestContext.authorizer.claims.sub;
-  const { title, description, dueDate } = JSON.parse(event.body);
+  // Parse incoming JSON
+  const data = JSON.parse(event.body);
 
+  // Determine userId: prefer Cognito auth but allow manual userId for tests
+  const userId = event.requestContext?.authorizer?.claims?.sub || data.userId;
+  const { title, description, dueDate } = data;
+
+  // Build new task object
   const newTask = {
     userId,
     taskId: uuid(),
@@ -17,13 +20,16 @@ exports.createTask = async (event) => {
     status: 'pending'
   };
 
+  // Persist to DynamoDB
   await getClient().put({
     TableName: table,
     Item: newTask
   }).promise();
 
+  // Return response
   return {
     statusCode: 201,
     body: JSON.stringify(newTask)
   };
 };
+
