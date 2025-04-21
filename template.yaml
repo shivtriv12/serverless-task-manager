@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >-
+  Serverless Task Manager API
+
+Globals:
+  Function:
+    Runtime: nodejs18.x
+    Timeout: 10
+    Environment:
+      Variables:
+        TASKS_TABLE: !Ref TasksTable
+
+Resources:
+  TasksTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: TasksTable
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: taskId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+        - AttributeName: taskId
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+
+  CreateTaskFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/createTask.createTask
+      Events:
+        PostTask:
+          Type: Api
+          Properties:
+            Path: /tasks
+            Method: post
+
+  GetTasksFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/getTasks.getTasks
+      Events:
+        ListTasks:
+          Type: Api
+          Properties:
+            Path: /tasks
+            Method: get
+
+  GetTaskByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/getTaskById.getTaskById
+      Events:
+        GetTask:
+          Type: Api
+          Properties:
+            Path: /tasks/{id}
+            Method: get
+
+  UpdateTaskFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/updateTask.updateTask
+      Events:
+        PutTask:
+          Type: Api
+          Properties:
+            Path: /tasks/{id}
+            Method: put
+
+  DeleteTaskFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/deleteTask.deleteTask
+      Events:
+        DeleteTask:
+          Type: Api
+          Properties:
+            Path: /tasks/{id}
+            Method: delete
