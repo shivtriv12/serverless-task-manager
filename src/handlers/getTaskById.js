@@ -1,7 +1,8 @@
+// src/handlers/getTaskById.js
 const { getClient } = require('../lib/dynamo');
 const table = process.env.TASKS_TABLE;
 
-exports.getTaskById = async (event) => {
+async function getTaskById(event) {
   const userId = event.requestContext.authorizer?.claims?.sub || 'anonymous';
   const taskId = event.pathParameters.id;
 
@@ -14,4 +15,7 @@ exports.getTaskById = async (event) => {
     statusCode: result.Item ? 200 : 404,
     body: JSON.stringify(result.Item),
   };
-};
+}
+
+module.exports = { getTaskById };            // <-- named export
+// or: exports.getTaskById = getTaskById;
